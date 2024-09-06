@@ -1,3 +1,7 @@
+"""
+This module contains functions for performing the codelab tasks
+"""
+
 import re
 import pandas as pd
 

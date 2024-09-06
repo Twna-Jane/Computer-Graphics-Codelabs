@@ -1,5 +1,3 @@
-from time import strftime
-
 import pandas as pd
 
 from codelab.functions import build_jsonl
