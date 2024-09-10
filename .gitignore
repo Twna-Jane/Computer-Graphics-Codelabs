@@ -1,0 +1,4 @@
+# Root project folder .gitignore
+codelab/__pycache__/
+codelab/credentials.json
+codelab/token.json
