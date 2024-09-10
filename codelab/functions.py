@@ -1,9 +1,12 @@
 """
 This module contains functions for performing the codelab tasks
 """
-
+import logging
+import os
 import re
+
 import pandas as pd
+from googleapiclient.http import MediaFileUpload
 
 
 def combine_dataframes(df1, df2):
@@ -64,6 +67,7 @@ def get_students_by_gender(df, gender):
         if row['Gender'] == gender:
             yield row
 
+
 def build_jsonl(shuffled_df, special_char_names):
     """
     Build data of shuffled students from the shuffled dataframe for jsonl
@@ -98,3 +102,41 @@ def build_jsonl(shuffled_df, special_char_names):
         id_count += 1
 
     return shuffled_students
+
+
+def create_folder(service, folder_name, parent_folder_id=None):
+    """
+    Create a folder in Google Drive.
+    :param parent_folder_id: ID of the parent folder
+    :param service: The Google Drive service
+    :param folder_name: The name of the folder
+    :return: the ID of the created folder
+    """
+
+    folder_metadata = {
+        "name": folder_name,
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [parent_folder_id],
+    }
+
+    folder = service.files().create(body=folder_metadata, fields='id').execute()
+
+    return folder['id']
+
+
+def upload_files(output_folder, service, parent_folder_id=None):
+    files_to_upload = [
+        (os.path.join(root, file), file)
+        for root, dirs, files in os.walk(output_folder)
+        for file in files
+    ]
+
+    for file_path, file_name in files_to_upload:
+        file_metadata = {
+            "name": file_name,
+            "parents": [parent_folder_id],
+        }
+
+        media = MediaFileUpload(file_path)
+        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        logging.info(f"Uploaded {file_name} to Google Drive.")
